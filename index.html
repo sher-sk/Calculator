@@ -18,17 +18,29 @@
     /* ── Reset & Base ─────────────────────────────── */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
+    html {
       height: 100%;
+      width: 100%;
+    }
+
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
       font-family: 'Inter', system-ui, sans-serif;
       background: #000000;
       color: #f0f0f0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
       touch-action: manipulation;
+    }
+
+    @media (min-width: 500px) {
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
 
     /* ── Calculator Shell ─────────────────────────── */
@@ -120,10 +132,12 @@
     /* ── Individual Button ─────────────────────────── */
     .btn {
       position: relative;
+      aspect-ratio: 1 / 1;
       border: none;
       border-radius: 50%;
       font-family: inherit;
       font-size: 1.6rem;
+      font-size: 3.6rem;
       font-weight: 500;
       cursor: pointer;
       user-select: none;
@@ -131,7 +145,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px 0;
       width: 100%;
       transition:
         transform .1s ease,
@@ -237,7 +250,7 @@
     /* ── Responsive ────────────────────────────────── */
     @media (max-width: 380px) {
       .buttons { gap: 8px; padding: 6px 6px 12px; }
-      .btn { font-size: 1.3rem; padding: 16px 0; }
+      .btn { font-size: 1.3rem; }
       .btn-op { font-size: 1.5rem; }
       .btn-multiply { font-size: 2rem; }
       #result { font-size: 2.8rem; }
@@ -247,7 +260,6 @@
       .btn:not(.btn-ac):not(.btn-zero):not(.btn-multiply) {
         height: 74px;
         width: 74px;
-        padding: 0;
         margin: 0 auto;
       }
       .display { min-height: 170px; padding: 28px 22px 14px; }
