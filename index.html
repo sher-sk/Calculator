@@ -103,9 +103,9 @@
 
     /* live result preview line */
     #live-result {
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: 400;
-      color: rgba(56,182,255,.65);
+      color: #4caf50;
       min-height: 1.6em;
       text-align: right;
       word-break: break-all;
@@ -114,7 +114,7 @@
       letter-spacing: -0.5px;
     }
     #live-result.highlight {
-      color: rgba(52,211,153,.8);
+      color: #66bb6a;
       font-weight: 500;
     }
 
@@ -137,8 +137,8 @@
       border: none;
       border-radius: 50%;
       font-family: inherit;
-      font-size: 4rem;
-      font-weight: 500;
+      font-size: 2.4rem;
+      font-weight: 400;
       cursor: pointer;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -172,25 +172,25 @@
 
     /* ── Number Buttons ────────────────────────────── */
     .btn-num {
-      background: rgba(255,255,255,.08);
-      color: #f0f0f0;
+      background: #3b3b3b;
+      color: #e8e8e8;
     }
     .btn-num:hover {
-      background: rgba(255,255,255,.13);
+      background: #4a4a4a;
     }
 
     /* ── Operator Buttons ─────────────────────────── */
     .btn-op {
-      background: rgba(40,165,220,.20);
-      color: #38b6ff;
-      font-size: 2.2rem;
+      background: #0d5c6b;
+      color: #4fc3f7;
+      font-size: 2.6rem;
     }
     .btn-op:hover {
-      background: rgba(40,165,220,.30);
+      background: #0e6d7e;
     }
     .btn-op.active-op {
-      background: rgba(40,165,220,.50);
-      box-shadow: 0 0 20px rgba(40,165,220,.35);
+      background: #0f8da3;
+      box-shadow: 0 0 16px rgba(15,141,163,.35);
     }
 
     /* ── Multiply — BIG (same size as AC) ────────── */
@@ -200,35 +200,39 @@
       aspect-ratio: auto;
       height: auto;
       padding: 18px 0;
-      font-size: 3rem;
+      font-size: 3.2rem;
       font-weight: 700;
       letter-spacing: -1px;
     }
 
     /* ── Function Buttons (AC, backspace) ──────────── */
     .btn-fn {
-      background: rgba(60,130,246,.20);
-      color: #5ba3ff;
+      background: #3b3b3b;
+      color: #e8e8e8;
       font-weight: 600;
     }
     .btn-fn:hover {
-      background: rgba(60,130,246,.30);
+      background: #4a4a4a;
     }
 
-    /* AC spans 2 columns */
+    /* AC button — bright blue */
     .btn-ac {
       grid-column: span 2;
       border-radius: 999px;
       aspect-ratio: auto;
       height: auto;
       padding: 18px 0;
-      font-size: 1.8rem;
-      color: red;
+      font-size: 2rem;
+      background: #1565c0;
+      color: #ffffff;
+    }
+    .btn-ac:hover {
+      background: #1976d2;
     }
 
     /* backspace */
     .btn-del {
-      font-size: 1.9rem;
+      font-size: 2.2rem;
     }
 
 
@@ -251,9 +255,9 @@
     /* ── Responsive ────────────────────────────────── */
     @media (max-width: 380px) {
       .buttons { gap: 8px; padding: 6px 6px 12px; }
-      .btn { font-size: 1.7rem; }
-      .btn-op { font-size: 1.9rem; }
-      .btn-multiply { font-size: 2.6rem; }
+      .btn { font-size: 2rem; }
+      .btn-op { font-size: 2.2rem; }
+      .btn-multiply { font-size: 2.8rem; }
       #result { font-size: 2.8rem; }
     }
 
