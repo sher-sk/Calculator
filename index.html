@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Calculator</title>
+  <meta name="description" content="A sleek dark-themed calculator with instant results." />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-512.jpg" />
+  <link rel="apple-touch-icon" href="icon-512.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #000000;
+      color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
+    }
+
+    /* ── Calculator Shell ─────────────────────────── */
+    .calculator {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 420px;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: #000000;
+    }
+
+    @media (min-width: 500px) {
+      .calculator {
+        height: auto;
+        border-radius: 28px;
+        border: 1px solid rgba(255,255,255,.05);
+        background: #0a0a0a;
+        box-shadow: 0 30px 100px rgba(0,0,0,.8);
+      }
+    }
+
+    /* ── Display ───────────────────────────────────── */
+    .display {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 40px 22px 16px;
+      min-height: 200px;
+      overflow: hidden;
+    }
+
+    #expression {
+      font-size: 1.15rem;
+      font-weight: 400;
+      color: rgba(255,255,255,.35);
+      min-height: 1.6em;
+      text-align: right;
+      word-break: break-all;
+      transition: color .2s;
+    }
+
+    #result {
+      font-size: 3.6rem;
+      font-weight: 300;
+      letter-spacing: -1.5px;
+      text-align: right;
+      word-break: break-all;
+      line-height: 1.15;
+      transition: font-size .15s ease, color .25s;
+      color: #ffffff;
+    }
+    #result.mid   { font-size: 2.6rem; }
+    #result.small { font-size: 1.9rem; }
+
+    /* live result preview line */
+    #live-result {
+      font-size: 2.2rem;
+      font-weight: 400;
+      color: rgba(56,182,255,.65);
+      min-height: 1.6em;
+      text-align: right;
+      word-break: break-all;
+      transition: opacity .2s, color .2s;
+      padding-top: 6px;
+      letter-spacing: -0.5px;
+    }
+    #live-result.highlight {
+      color: rgba(52,211,153,.8);
+      font-weight: 500;
+    }
+
+    /* ── Button Grid ──────────────────────────────── */
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 8px 12px 16px;
+    }
+
+    @media (min-width: 500px) {
+      .buttons { padding: 12px 16px 20px; }
+    }
+
+    /* ── Individual Button ─────────────────────────── */
+    .btn {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border: none;
+      border-radius: 50%;
+      font-family: inherit;
+      font-size: 1.6rem;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        transform .1s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+      outline: none;
+    }
+
+    .btn:active {
+      transform: scale(.90);
+    }
+
+    /* ripple overlay */
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: radial-gradient(circle at var(--rx, 50%) var(--ry, 50%), rgba(255,255,255,.22) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity .35s;
+      pointer-events: none;
+    }
+    .btn.ripple::after { opacity: 1; }
+
+    /* ── Number Buttons ────────────────────────────── */
+    .btn-num {
+      background: rgba(255,255,255,.08);
+      color: #f0f0f0;
+    }
+    .btn-num:hover {
+      background: rgba(255,255,255,.13);
+    }
+
+    /* ── Operator Buttons ─────────────────────────── */
+    .btn-op {
+      background: rgba(40,165,220,.20);
+      color: #38b6ff;
+      font-size: 1.75rem;
+    }
+    .btn-op:hover {
+      background: rgba(40,165,220,.30);
+    }
+    .btn-op.active-op {
+      background: rgba(40,165,220,.50);
+      box-shadow: 0 0 20px rgba(40,165,220,.35);
+    }
+
+    /* ── Multiply — BIG (same size as AC) ────────── */
+    .btn-multiply {
+      grid-column: span 2;
+      border-radius: 999px;
+      aspect-ratio: auto;
+      height: auto;
+      padding: 18px 0;
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    /* ── Function Buttons (AC, backspace) ──────────── */
+    .btn-fn {
+      background: rgba(60,130,246,.20);
+      color: #5ba3ff;
+      font-weight: 600;
+    }
+    .btn-fn:hover {
+      background: rgba(60,130,246,.30);
+    }
+
+    /* AC spans 2 columns */
+    .btn-ac {
+      grid-column: span 2;
+      border-radius: 999px;
+      aspect-ratio: auto;
+      height: auto;
+      padding: 18px 0;
+      font-size: 1.4rem;
+    }
+
+    /* backspace */
+    .btn-del {
+      font-size: 1.5rem;
+    }
+
+
+
+    /* ── 0 spans 3 columns ─────────────────────────── */
+    .btn-zero {
+      grid-column: span 3;
+      border-radius: 999px;
+      aspect-ratio: auto;
+      height: auto;
+      padding: 18px 0;
+    }
+
+    /* ── Keyboard-focus ring ───────────────────────── */
+    .btn:focus-visible {
+      outline: 2px solid rgba(56,182,255,.6);
+      outline-offset: 3px;
+    }
+
+    /* ── Responsive ────────────────────────────────── */
+    @media (max-width: 380px) {
+      .buttons { gap: 8px; padding: 6px 8px 12px; }
+      .btn { font-size: 1.35rem; }
+      .btn-op { font-size: 1.5rem; }
+      .btn-multiply { font-size: 2rem; }
+      #result { font-size: 2.8rem; }
+    }
+
+    @media (min-width: 500px) {
+      .btn:not(.btn-ac):not(.btn-zero):not(.btn-multiply) {
+        aspect-ratio: auto;
+        height: 74px;
+        width: 74px;
+        margin: 0 auto;
+      }
+      .display { min-height: 170px; padding: 28px 22px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator" role="application" aria-label="Calculator">
+  <!-- Display -->
+  <div class="display">
+    <div id="expression" aria-live="polite"></div>
+    <div id="result" aria-live="assertive">0</div>
+    <div id="live-result"></div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="buttons">
+    <!-- Row 1: AC (span 2), × (span 2) -->
+    <button class="btn btn-fn btn-ac" id="btn-ac" data-action="clear" aria-label="All Clear">AC</button>
+    <button class="btn btn-op btn-multiply" id="btn-mul" data-action="op" data-value="×" aria-label="Multiply">×</button>
+
+    <!-- Row 2: 7 8 9 ÷ -->
+    <button class="btn btn-num" id="btn-7" data-action="digit" data-value="7">7</button>
+    <button class="btn btn-num" id="btn-8" data-action="digit" data-value="8">8</button>
+    <button class="btn btn-num" id="btn-9" data-action="digit" data-value="9">9</button>
+    <button class="btn btn-op" id="btn-div" data-action="op" data-value="÷" aria-label="Divide">÷</button>
+
+    <!-- Row 3: 4 5 6 − -->
+    <button class="btn btn-num" id="btn-4" data-action="digit" data-value="4">4</button>
+    <button class="btn btn-num" id="btn-5" data-action="digit" data-value="5">5</button>
+    <button class="btn btn-num" id="btn-6" data-action="digit" data-value="6">6</button>
+    <button class="btn btn-op" id="btn-sub" data-action="op" data-value="−" aria-label="Subtract">−</button>
+
+    <!-- Row 4: 1 2 3 + -->
+    <button class="btn btn-num" id="btn-1" data-action="digit" data-value="1">1</button>
+    <button class="btn btn-num" id="btn-2" data-action="digit" data-value="2">2</button>
+    <button class="btn btn-num" id="btn-3" data-action="digit" data-value="3">3</button>
+    <button class="btn btn-op" id="btn-add" data-action="op" data-value="+" aria-label="Add">+</button>
+
+    <!-- Row 5: 0 (span 3), ⌫ -->
+    <button class="btn btn-num btn-zero" id="btn-0" data-action="digit" data-value="0">0</button>
+    <button class="btn btn-fn btn-del" id="btn-del" data-action="delete" aria-label="Delete">⌫</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── Register Service Worker ────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  // ── State ──────────────────────────────────────────
+  let tokens = [];         // e.g. ['12', '+', '5', '×', '3']
+  let currentNum = '';     // number currently being typed
+  let justEvaluated = false;
+  let lastResult = null;
+
+  const $expr   = document.getElementById('expression');
+  const $result = document.getElementById('result');
+  const $live   = document.getElementById('live-result');
+  const opBtns  = document.querySelectorAll('.btn-op');
+
+  // ── Helpers ────────────────────────────────────────
+  function formatNumber(n) {
+    if (!isFinite(n)) return 'Error';
+    if (isNaN(n)) return 'Error';
+    const abs = Math.abs(n);
+    if (abs >= 1e12 || (abs !== 0 && abs < 1e-8)) return n.toExponential(6);
+    const s = parseFloat(n.toPrecision(12));
+    return s.toLocaleString('en-US', { maximumFractionDigits: 10 });
+  }
+
+  function buildExpression() {
+    let parts = [...tokens];
+    if (currentNum !== '') parts.push(currentNum);
+    return parts.join(' ');
+  }
+
+  function evaluate(toks) {
+    // Convert token array to JS expression and evaluate
+    if (toks.length === 0) return null;
+    const jsExpr = toks.map(t => {
+      if (t === '×') return '*';
+      if (t === '÷') return '/';
+      if (t === '−') return '-';
+      return t;
+    }).join(' ');
+
+    // Safety: only allow digits, operators, dots, spaces, minus, e
+    if (/[^0-9+\-*/.\se]/.test(jsExpr)) return null;
+    try {
+      const r = Function('"use strict"; return (' + jsExpr + ')')();
+      return typeof r === 'number' ? r : null;
+    } catch { return null; }
+  }
+
+  function updateDisplay() {
+    const exprStr = buildExpression();
+    $expr.textContent = exprStr;
+
+    // Live result: always try to evaluate what's typed so far
+    const allTokens = [...tokens];
+    if (currentNum !== '' && currentNum !== '.' && currentNum !== '-') {
+      allTokens.push(currentNum);
+    }
+
+    // Only show live result if there's an actual operation
+    const hasOp = allTokens.some(t => '×÷+−'.includes(t));
+    if (hasOp && allTokens.length >= 3) {
+      // If expression ends with operator, evaluate everything except last op
+      const last = allTokens[allTokens.length - 1];
+      let toEval = allTokens;
+      if ('×÷+−'.includes(last)) {
+        toEval = allTokens.slice(0, -1);
+      }
+      const result = evaluate(toEval);
+      if (result !== null) {
+        $live.textContent = '= ' + formatNumber(result);
+        $live.classList.remove('highlight');
+      } else {
+        $live.textContent = '';
+      }
+    } else {
+      $live.textContent = '';
+    }
+
+    // Resize result text based on length
+    const rText = $result.textContent;
+    $result.classList.remove('mid', 'small');
+    if (rText.length > 16) $result.classList.add('small');
+    else if (rText.length > 10) $result.classList.add('mid');
+  }
+
+  function clearOpHighlight() {
+    opBtns.forEach(b => b.classList.remove('active-op'));
+  }
+
+  function highlightOp(val) {
+    clearOpHighlight();
+    opBtns.forEach(b => {
+      if (b.dataset.value === val) b.classList.add('active-op');
+    });
+  }
+
+  // ── Ripple Effect ──────────────────────────────────
+  function ripple(btn, e) {
+    const rect = btn.getBoundingClientRect();
+    const x = ((e?.clientX ?? rect.left + rect.width / 2) - rect.left) / rect.width * 100;
+    const y = ((e?.clientY ?? rect.top + rect.height / 2) - rect.top) / rect.height * 100;
+    btn.style.setProperty('--rx', x + '%');
+    btn.style.setProperty('--ry', y + '%');
+    btn.classList.remove('ripple');
+    void btn.offsetWidth;
+    btn.classList.add('ripple');
+    setTimeout(() => btn.classList.remove('ripple'), 350);
+  }
+
+  // ── Actions ────────────────────────────────────────
+  function handleDigit(val) {
+    if (justEvaluated) {
+      // Start completely fresh
+      tokens = [];
+      currentNum = '';
+      lastResult = null;
+      justEvaluated = false;
+      $live.textContent = '';
+    }
+
+    // Prevent multiple dots
+    if (val === '.' && currentNum.includes('.')) return;
+    // Prevent leading zeros like 007
+    if (val === '0' && currentNum === '0') return;
+    if (val !== '.' && currentNum === '0') currentNum = '';
+
+    currentNum += val;
+    $result.textContent = currentNum;
+    clearOpHighlight();
+    updateDisplay();
+  }
+
+  function handleOp(val) {
+    if (justEvaluated && lastResult !== null) {
+      // Continue from last result
+      tokens = [String(lastResult)];
+      currentNum = '';
+      justEvaluated = false;
+      $live.textContent = '';
+    }
+
+    // If nothing typed yet, ignore (except after a number)
+    if (tokens.length === 0 && currentNum === '') return;
+
+    // Commit current number
+    if (currentNum !== '') {
+      tokens.push(currentNum);
+      currentNum = '';
+    }
+
+    // Replace trailing operator
+    const last = tokens[tokens.length - 1];
+    if ('×÷+−'.includes(last)) {
+      tokens[tokens.length - 1] = val;
+    } else {
+      tokens.push(val);
+    }
+
+    // Show current evaluated result as the main display
+    const numTokens = tokens.filter(t => !'×÷+−'.includes(t));
+    if (numTokens.length > 0) {
+      const evTokens = [...tokens];
+      // remove trailing op for display
+      if ('×÷+−'.includes(evTokens[evTokens.length - 1])) {
+        const evalSlice = evTokens.slice(0, -1);
+        const r = evaluate(evalSlice);
+        if (r !== null) $result.textContent = formatNumber(r);
+      }
+    }
+
+    highlightOp(val);
+    updateDisplay();
+  }
+
+  function handleEquals() {
+    if (tokens.length === 0 && currentNum === '') return;
+
+    // Commit current number
+    if (currentNum !== '') {
+      tokens.push(currentNum);
+      currentNum = '';
+    }
+
+    // Remove trailing operator
+    while (tokens.length > 0 && '×÷+−'.includes(tokens[tokens.length - 1])) {
+      tokens.pop();
+    }
+
+    const result = evaluate(tokens);
+    if (result === null) {
+      $result.textContent = 'Error';
+    } else {
+      $result.textContent = formatNumber(result);
+      $live.textContent = '';
+      $live.classList.add('highlight');
+      lastResult = result;
+    }
+
+    const finalExpr = tokens.join(' ') + ' =';
+    $expr.textContent = finalExpr;
+    tokens = [];
+    currentNum = '';
+    justEvaluated = true;
+    clearOpHighlight();
+  }
+
+  function handleClear() {
+    tokens = [];
+    currentNum = '';
+    lastResult = null;
+    justEvaluated = false;
+    $result.textContent = '0';
+    $expr.textContent = '';
+    $live.textContent = '';
+    clearOpHighlight();
+  }
+
+  function handleDelete() {
+    if (justEvaluated) return;
+
+    if (currentNum !== '') {
+      // Remove last digit from current number
+      currentNum = currentNum.slice(0, -1);
+      $result.textContent = currentNum || '0';
+    } else if (tokens.length > 0) {
+      const last = tokens.pop();
+      if ('×÷+−'.includes(last)) {
+        // Removed an operator; restore the number before it as currentNum
+        if (tokens.length > 0) {
+          const prev = tokens[tokens.length - 1];
+          if (!'×÷+−'.includes(prev)) {
+            currentNum = tokens.pop();
+            $result.textContent = currentNum;
+          }
+        }
+      } else {
+        // Removed a number
+        currentNum = last.slice(0, -1);
+        $result.textContent = currentNum || '0';
+      }
+    }
+
+    if (tokens.length === 0 && currentNum === '') {
+      $result.textContent = '0';
+    }
+
+    clearOpHighlight();
+    if (tokens.length > 0) {
+      const lastTok = tokens[tokens.length - 1];
+      if ('×÷+−'.includes(lastTok)) highlightOp(lastTok);
+    }
+    updateDisplay();
+  }
+
+  // ── Event Delegation ──────────────────────────────
+  document.querySelector('.buttons').addEventListener('click', e => {
+    const btn = e.target.closest('.btn');
+    if (!btn) return;
+    ripple(btn, e);
+
+    switch (btn.dataset.action) {
+      case 'digit':  handleDigit(btn.dataset.value); break;
+      case 'op':     handleOp(btn.dataset.value);    break;
+      case 'clear':  handleClear();                   break;
+      case 'delete': handleDelete();                  break;
+    }
+  });
+
+  // ── Keyboard Support ──────────────────────────────
+  document.addEventListener('keydown', e => {
+    const key = e.key;
+    if (key >= '0' && key <= '9') return handleDigit(key);
+    if (key === '.') return handleDigit('.');
+    if (key === '+') return handleOp('+');
+    if (key === '-') return handleOp('−');
+    if (key === '*') return handleOp('×');
+    if (key === '/') { e.preventDefault(); return handleOp('÷'); }
+
+    if (key === 'Backspace') return handleDelete();
+    if (key === 'Escape' || key === 'c' || key === 'C') return handleClear();
+  });
+})();
+</script>
+
+</body>
+</html>
